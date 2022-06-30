@@ -16,3 +16,20 @@
 
 package com.example.android.trackmysleepquality.database
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+//実体
+@Entity(tableName = "daily_sleep_quality_table")
+data class SleepNight(
+    //主キー、autoGenerate = true　→　Roomが実体ごとのIDを生成する。IDは一意である
+    @PrimaryKey(autoGenerate = true)
+    val nightId: Long = 0L,
+    @ColumnInfo(name = "start_time_milli")
+    val startTimeMilli: Long = System.currentTimeMillis(),  //現在時刻
+    @ColumnInfo(name =  "end_time_milli")
+    val endTimeMilli: Long = startTimeMilli,
+    @ColumnInfo(name = "quality_rating")
+    val sleepQuality: Int = -1
+)

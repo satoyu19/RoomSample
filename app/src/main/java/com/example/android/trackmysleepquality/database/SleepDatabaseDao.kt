@@ -16,7 +16,36 @@
 
 package com.example.android.trackmysleepquality.database
 
-import androidx.room.Dao
+import androidx.lifecycle.LiveData
+import androidx.room.*
 
 @Dao
-interface SleepDatabaseDao
+interface SleepDatabaseDao{
+    //データの挿入
+    @Insert
+    suspend fun insert(night: SleepNight)
+
+    //データのアップデート
+    @Update
+    suspend fun upDate(night: SleepNight)
+
+    //データの削除
+    @Delete
+    suspend fun delete(night: SleepNight)
+
+    //カスタムクエリ(データの取得)
+    @Query("SELECT * FROM daily_sleep_quality_table WHERE nightId = :key")  //関数の引数を利用
+    suspend fun get(key: Long): SleepNight?
+
+    //カスタムクエリ(データの全削除)
+    @Query("DELETE FROM daily_sleep_quality_table")
+    suspend fun clear()
+
+    //カスタムクエリ(idをもとに降順で並び替え、リストの一番最初(最新のデーター)を一つだけ取得。
+    @Query("SELECT * FROM daily_sleep_quality_table ORDER BY nightId DESC LIMIT 1")
+    suspend fun getToNight(): SleepNight?
+
+    //カスタムクエリ(全データを取得)
+    @Query("SELECT * FROM daily_sleep_quality_table ORDER BY nightId DESC")
+    fun getAllNights(): LiveData<List<SleepNight>>
+}

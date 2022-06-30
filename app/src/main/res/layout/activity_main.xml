@@ -18,6 +18,10 @@
      including layouts, and it's a good idea to use it.
      See: https://developer.android.com/training/improving-layouts/reusing-layouts -->
 
+<!--mergeタグは複数のレイアウトが含まれているときに、冗長なレイアウトを排除するために使われます。冗長なレイアウトとは、
+ConstraintLayout > LinearLayout > TextViewのような場合で、この場合システムはLinearLayoutを排除することができます。
+このような最適化によってビューヒエラルキーを簡素化し、アプリのパフォーマンスを向上させることができます。 -->
+
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 

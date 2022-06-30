@@ -18,13 +18,48 @@ package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
+import com.example.android.trackmysleepquality.database.SleepNight
+import kotlinx.coroutines.launch
 
 /**
- * ViewModel for SleepTrackerFragment.
+ * AndroidViewModel →　ViewModelと変わりないが、コンストラクタで受け取ったapplicationをプロパティとして利用できるようにしている
  */
-class SleepTrackerViewModel(
-        val database: SleepDatabaseDao,
-        application: Application) : AndroidViewModel(application) {
+class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Application) : AndroidViewModel(application) {
+
+    private var tonight = MutableLiveData<SleepNight?>()
+
+    init {
+        initializeTonight()
+
+    }
+
+    private fun initializeTonight() {
+        viewModelScope.launch {
+            tonight.value = getTonightFromDatabase()
+        }
+    }
+
+    private suspend fun getTonightFromDatabase(): SleepNight? {
+        //最新の夜の情報を抽出
+        var night = database.getToNight()
+        if(night?.endTimeMilli != night?.startTimeMilli){   //計測済み出なければnullを返す
+            night = null
+        }
+        return night
+    }
+
+    //スタートボタンのハンドラー
+    suspend fun onStartTracking(){
+        val newNight = SleepNight()
+        insert(newNight)
+        tonight.value = getTonightFromDatabase()
+    }
+
+    private suspend fun insert(newNight: SleepNight) {
+        database.insert(newNight)
+    }
 }
 
