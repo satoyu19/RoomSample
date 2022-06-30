@@ -24,7 +24,8 @@ buildscript {
         room_version = '2.2.5'
         coroutine_version = '1.3.7'
         gradleVersion = '4.0.1'
-        navigationVersion = '1.0.0-alpha08'
+        // NOTE:　1.0.0-alpha8では、Directionsがimportできないため、改善されている1.0.0-alpha11に変更
+        navigationVersion = '1.0.0-alpha11'
         dataBindingCompilerVersion = gradleVersion // Always need to be the same.
     }
 
@@ -34,10 +35,9 @@ buildscript {
     }
 
     dependencies {
+        classpath "android.arch.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"
         classpath "com.android.tools.build:gradle:$gradleVersion"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "android.arch.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"
-
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
