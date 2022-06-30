@@ -10,48 +10,56 @@ Room(データベース)
     ・実体：データベースに保存するためにオブジェクトや概念、およびそれらのプロパティを表すものです。
         実体クラスはテーブルとそのクラスがテーブル内で示す行ごとのインスタンスを定義します。
         それぞれのプロパティはカラムを定義します。今回のアプリでは、実体は睡眠した夜についての情報を保持します。
-
     ・クエリ：データベースのテーブル、およびテーブルの組み合わせからデータや情報を要求する際の要求、またデータ上でなんらかのアクションを起こさせるための要求のことを言います。
         一般的なクエリは実体の取得、挿入、更新などです。例えば、全ての夜の記録を開始時間で並べ替えて要求することなどができます。
 
 ・それぞれの実体をアノテーションされたデータクラスとして、またデータとのやり取りはアノテーションされたインターフェースである、データアクセスオブジェクト（DAO)として定義する必要があります。
     Roomはこれらのアノテーションされたクラスをデータベースにテーブルやデータベース上で動作するクエリを作成するために使用します。
 
-Pre-requisites
+![image](https://user-images.githubusercontent.com/96398365/175565360-9e1d12b9-7f32-4b96-abf0-1144538c202d.png)
+
+DAO(Data Access Object)
 --------------
 
-You need to know:
+参考URL:https://developer.android.com/training/data-storage/room/accessing-data?hl=ja<br>
 
-* Building a basic user interface (UI) for an Android app, 
-  using an activity, fragments, and views.
-* Navigating between fragments and using Safe Args (a Gradle plugin) 
-  to pass data between fragments.
-* View models, view-model factories, and LiveData and its observers. 
-  These Architecture Components topics are covered in an earlier codelab in this course.
-* A basic understanding of SQL databases and the SQLite language.
+DAO：データベースの挿入、削除、更新用の便利なメソッドを提供しています。データベースにアクセスするためのカスタムインターフェースの定義と捉えてください。
+    一般的なデータベースの操作用に、Roomライブラリは@Insert、@Delete、@Updateといった便利なアノテーションを用意しています。その他全てについては、@Queryアノテーションがあります。
+    SQLiteにサポートされているどんなクエリでも書くことができます。
 
 
-Getting Started
+
+Daoと実態を利用するRoomデータベース
 ---------------
 
-1. Download and run the app.
+参考URL:https://developer.android.com/reference/kotlin/androidx/room/RoomDatabase?hl=ja<br>
+・データベースを作成する際には、「@database」アノテーションを付与し、RoomDatabaseを継承した、抽象クラスを定義する。
 
-License
+コルーチン
 -------
+・メインスレッドのブロッキング無しにロングランニングタスクを行わせるためのパターンの一つがコールバックを使うことです。<br>
+    参考URL：https://developer.android.com/courses/extras/multithreading<br>
+    
+・Daoと実態を利用するRoomデータベースKotlinにおいて、コルーチンとはロングランニングタスクをエレガントかつ効率的に扱うための方法です。Kotlinコルーチンはコールバックベースのコードをシーケンシャル（一連   の）コードに変換してくれます。シーケンシャルに書かれたコードは一般的に可読性が高く、例外のような言語ごとの特徴を使うこともできます。最終的にはコルーチンとコールバックは同じことをします。つまりロングランニン   グタスクから結果が手に入るの待ってから処理を続行します。
+![image](https://user-images.githubusercontent.com/96398365/176081152-2f56a6b8-5fbf-4191-b08e-4f6312497eca.png)
 
-Copyright 2019 Google, Inc.
+コルーチンには以下の性質があります。<br>
+    ・コルーチンは非同期でノンブロッキング：ノンブロッキングとはコルーチンがメインスレッドまたはUIスレッドをブロックしないということを意味します。ですので、コルーチンを用いることで、ユーザーは快適にアプリを          操作することができます。UIの応答が常に優先されるためです。<br>
+    ・コルーチンは非同期なコードをシーケンシャルにするために、suspend関数を使います。suspendというキーワードは、コルーチンで使えるようにするために関数または関数のタイプをマーキングするKotlinの手法で         す。コルーチンがsuspendでマーキングされた関数を呼び出す際、通常の関数のように結果を返すまでブロッキングする代わりに、コルーチンは結果の準備ができるまで実行を停止します。それからコルーチンは          中断したところから再開し、結果を返します。<br>
 
-Licensed to the Apache Software Foundation (ASF) under one or more contributor
-license agreements.  See the NOTICE file distributed with this work for
-additional information regarding copyright ownership.  The ASF licenses this
-file to you under the Apache License, Version 2.0 (the "License"); you may not
-use this file except in compliance with the License.  You may obtain a copy of
-the License at
+・コルーチンはプログラムのメイン処理から独立して実行されます。これは平行して、または別のプロセッサで行われることがあります。またアプリがインプットを待っている間に別の処理を行っているといった場合もあります。非    同期の重要な点は、明示的に待機するまで、結果が入手できないということです。
 
-  http://www.apache.org/licenses/LICENSE-2.0
+・コルーチンが一時停止し結果を待っている間、それが実行されているスレッドをブロックしません。そうすることで、他の関数やコルーチンが実行されることを可能にしています。
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
-License for the specific language governing permissions and limitations under
-the License.
+Tip: ブロッキングと一時停止の違いは、スレッドがブロックされている場合、他の処理は行われないのに対して、スレッドが一時停止されている場合、他の処理は結果が利用可能になるまで行われるということです。
+![image](https://user-images.githubusercontent.com/96398365/176082883-1afca12a-09fc-4ff2-b5d0-7cc8f33474bf.png)
+
+Kotlinでコルーチンを利用するためには、以下の三つが必要です。
+
+・ジョブ
+・ディスパッチャー
+・スコープ
+
+Roomとディスパッチャー
+-------
+データベース操作をするためにRoomライブラリを使う際、RoomはDispatcher.IOを使ってバックグラウンドでのデータベース操作を行います。あなた自身が明示的にDispatcherを指定する必要はありません。
