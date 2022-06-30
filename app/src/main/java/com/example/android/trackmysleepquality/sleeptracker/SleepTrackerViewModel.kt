@@ -17,11 +17,10 @@
 package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import com.example.android.trackmysleepquality.database.SleepNight
+import com.example.android.trackmysleepquality.formatNights
 import kotlinx.coroutines.launch
 
 /**
@@ -29,7 +28,24 @@ import kotlinx.coroutines.launch
  */
 class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Application) : AndroidViewModel(application) {
 
+    //navigationのトリガー
+    private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
+    val navigateToSleepQuality: LiveData<SleepNight>
+    get() = _navigateToSleepQuality
+
     private var tonight = MutableLiveData<SleepNight?>()
+
+    //navigationのトリガーをリセット
+    fun doneNavigating(){
+        _navigateToSleepQuality.value = null
+    }
+
+    /** database.getAllNightはLiveDateを返すため、databaseに更新があれば、nightsを利用したUIも更新される */
+    private var nights = database.getAllNights()
+    val nightString = Transformations.map(nights){ nights ->
+        //データベースの情報を１つの文字列に変更する
+        formatNights(nights, application.resources)
+    }
 
     init {
         initializeTonight()
@@ -52,14 +68,45 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Applica
     }
 
     //スタートボタンのハンドラー
-    suspend fun onStartTracking(){
-        val newNight = SleepNight()
-        insert(newNight)
-        tonight.value = getTonightFromDatabase()
+     fun onStartTracking(){
+        viewModelScope.launch {
+            val newNight = SleepNight()
+            insert(newNight)
+            tonight.value = getTonightFromDatabase()
+        }
     }
 
     private suspend fun insert(newNight: SleepNight) {
         database.insert(newNight)
+    }
+
+    //ストップボタンのハンドラー
+    fun onStopTracking(){
+        viewModelScope.launch {
+            //終了時間がセットされていなければ、終了時間を更新する
+            val oldNight = tonight.value ?: return@launch
+            oldNight.endTimeMilli = System.currentTimeMillis()
+            upDate(oldNight)
+
+            //_navigateToSleepQualityが値を持っている時に遷移する
+            _navigateToSleepQuality.value = oldNight
+        }
+    }
+
+    private suspend fun upDate(night: SleepNight) {
+        database.upDate(night)
+    }
+
+    //clearButtonのハンドラー、database内全削除
+    fun onClear(){
+        viewModelScope.launch {
+            clear()
+            tonight.value = null
+        }
+    }
+
+    private suspend fun clear(){
+        database.clear()
     }
 }
 
