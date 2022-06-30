@@ -50,19 +50,18 @@ class SleepTrackerFragment : Fragment() {
         binding.lifecycleOwner = this
         binding.sleepTrackerViewModel = sleepTrackerViewModel
 
-        sleepTrackerViewModel.navigateToSleepQuality.observe(viewLifecycleOwner, Observer { night ->
-            night?.let {
-                
-                this.findNavController().navigate(SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepQualityFragment(night.nightId))
-            }
-        })
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
+        sleepTrackerViewModel.navigateToSleepQuality.observe(viewLifecycleOwner, Observer { night ->
+            night?.let {
+                this.findNavController().navigate(SleepTrackerFragmentDirections.actionSleepTrackerFragmentToSleepQualityFragment(night.nightId))
+                //navigationのトリガーをリセット
+                sleepTrackerViewModel.doneNavigating()
+            }
+        })
     }
 }
