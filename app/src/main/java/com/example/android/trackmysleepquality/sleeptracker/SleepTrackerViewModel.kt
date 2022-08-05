@@ -47,6 +47,8 @@ class SleepTrackerViewModel(val database: SleepDatabaseDao, application: Applica
         formatNights(nights, application.resources)
     }
 
+
+
     init {
         initializeTonight()
 
